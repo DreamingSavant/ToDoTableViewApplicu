@@ -9,12 +9,15 @@
 import Foundation
 
 //build class called item to store two properties one stringtitle:bool
-
-class Item {
+//Encodable makes Item type be able to be saved into a plist file
+class Item: Codable {
     
     var title: String = ""
     
     var done: Bool = false
+    
+    
+    
     
 //    init(title : String, done: Bool){
 //        self.title = title

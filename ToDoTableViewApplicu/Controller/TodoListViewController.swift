@@ -11,29 +11,18 @@ import UIKit
 class TodoListViewController: UITableViewController {
 
     var itemArray = [Item]()
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
     
     // used to save data within the app code below
-    let defaults = UserDefaults.standard
+//    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let newItem = Item()
-        newItem.title = "Win"
-        itemArray.append(newItem)
+        print(dataFilePath!)
         
-        let newItem2 = Item()
-        newItem2.title = "Win Win Win Win"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "Fuck everything else"
-        itemArray.append(newItem3)
-        
-//        print(itemArray.title)
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//        }
+        loadItems()
+
         // Do any additional setup after loading the view, typically from a nib.
     }
     
@@ -53,7 +42,7 @@ class TodoListViewController: UITableViewController {
         
         cell.textLabel?.text = item.title
         
-        cell.accessoryType = item.done ?  .checkmark : .none
+        cell.accessoryType = item.done ? .checkmark : .none
         
         //code below was shortened into ternary condition with line above
         
@@ -73,6 +62,7 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].done = !itemArray [indexPath.row].done
         
+        saveItems()
         //line of code above is what the code commented directly below is saying
         
 //        if itemArray[indexPath.row].done == false {
@@ -82,6 +72,7 @@ class TodoListViewController: UITableViewController {
 //        }
         tableView.reloadData()
         
+        tableView.deselectRow(at: indexPath, animated: true)
     }
        //if statement below adds and deletes the check mark as requested
 //        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
@@ -117,10 +108,11 @@ class TodoListViewController: UITableViewController {
             //What will happen once the user clicks the add item button on our UIAlert
             let newItem = Item()
             newItem.title = textField.text!
+            
             self.itemArray.append(newItem)
             
-            //method below is used to save data in app
-            self.defaults.set(self.itemArray, forKey: "TodoListArray")
+
+            self.saveItems()
             
             //refreshes data in tableView thus adding new element from text field into tableview
             self.tableView.reloadData()
@@ -135,8 +127,29 @@ class TodoListViewController: UITableViewController {
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
     }
+    //method below is used to save data in app
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        do{
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        self.tableView.reloadData()
+    }
     
-
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("Error decoding item array, \(error)")
+            }
+        }
+    }
+    
 }
 
 
